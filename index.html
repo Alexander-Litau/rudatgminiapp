@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>RUDA Digital — Mini App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Figtree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --brand: #ff9e02;
+  --brand-light: #ffc55c;
+  --brand-soft: rgba(255, 158, 2, 0.07);
+  --brand-glow: rgba(255, 158, 2, 0.2);
+  --sage: #4A5D4A;
+  --sage-light: #E8EDE5;
+  --sage-bg: #F4F6F0;
+  --bg: #FAFAF6;
+  --bg-warm: #F5EDE0;
+  --text: #2C2C28;
+  --text-muted: #8A8A80;
+  --border: rgba(0, 0, 0, 0.06);
+  --glass: rgba(255, 255, 255, 0.50);
+  --glass-border: rgba(255, 255, 255, 0.65);
+  --glass-hover: rgba(255, 255, 255, 0.72);
+  --shadow: 0 8px 32px rgba(74, 93, 74, 0.06);
+  --shadow-lg: 0 24px 64px rgba(74, 93, 74, 0.09);
+  --radius: 20px;
+  --radius-sm: 14px;
+}
+
+html { font-size: 16px; scroll-behavior: smooth; }
+
+body {
+  background: linear-gradient(165deg, #F4F6F0 0%, #FAFAF6 25%, #F0ECE4 50%, #FAFAF6 75%, #EDF0E8 100%);
+  background-attachment: fixed;
+  color: var(--text);
+  font-family: 'Figtree', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  overflow-x: hidden;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+/* ═══════════ DECORATIVE BLOBS ═══════════ */
+.blob {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+}
+.blob-1 { width: 300px; height: 300px; background: rgba(74, 93, 74, 0.1); top: -80px; right: -80px; }
+.blob-2 { width: 250px; height: 250px; background: rgba(255, 158, 2, 0.07); bottom: 20%; left: -60px; }
+.blob-3 { width: 200px; height: 200px; background: rgba(74, 93, 74, 0.05); top: 50%; left: 30%; }
+
+/* ═══════════ APP CONTAINER ═══════════ */
+.app {
+  position: relative;
+  z-index: 1;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* ═══════════ HEADER ═══════════ */
+.header {
+  text-align: center;
+  padding: 32px 0 24px;
+  animation: fadeUp 0.6s ease-out;
+}
+
+.logo {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--sage);
+  letter-spacing: -1px;
+}
+.logo span { color: var(--brand); }
+
+.header-tagline {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-top: 6px;
+  font-weight: 500;
+}
+
+/* ═══════════ HERO CARD ═══════════ */
+.hero-card {
+  background: var(--sage);
+  border-radius: var(--radius);
+  padding: 32px 28px;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 20px;
+  animation: fadeUp 0.6s ease-out 0.1s both;
+}
+
+.hero-card::before {
+  content: '';
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: rgba(255, 158, 2, 0.2);
+  filter: blur(50px);
+}
+
+.hero-card::after {
+  content: '';
+  position: absolute;
+  bottom: -40px;
+  left: -40px;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  filter: blur(40px);
+}
+
+.hero-card > * { position: relative; z-index: 1; }
+
+.hero-card h1 {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+  margin-bottom: 10px;
+}
+
+.hero-card h1 .accent { color: var(--brand); }
+
+.hero-card p {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.65);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.hero-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.hero-stat {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 14px 10px;
+  text-align: center;
+}
+
+.hero-stat-num {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--brand-light);
+}
+
+.hero-stat-label {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 2px;
+}
+
+/* ═══════════ SECTION LABEL ═══════════ */
+.section-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2.5px;
+  color: var(--brand);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-label::before {
+  content: '';
+  width: 20px;
+  height: 1.5px;
+  background: var(--brand);
+}
+
+.section-title {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -1px;
+  margin-bottom: 16px;
+}
+
+/* ═══════════ SERVICES ═══════════ */
+.services-section {
+  padding: 8px 0 24px;
+}
+
+.services-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.service-card {
+  background: var(--glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding: 24px 22px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.service-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--brand), var(--sage));
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.service-card:active {
+  transform: scale(0.98);
+}
+
+.service-card:active::before { opacity: 1; }
+
+.service-card-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+
+.service-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: var(--brand-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+  transition: background 0.3s;
+}
+
+.service-card h3 {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  flex: 1;
+}
+
+.service-arrow {
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  transition: transform 0.3s, color 0.3s;
+}
+
+.service-card p {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.service-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.service-tag {
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 50px;
+  background: rgba(74, 93, 74, 0.06);
+  color: var(--sage);
+  border: 1px solid rgba(74, 93, 74, 0.1);
+}
+
+/* ═══════════ SERVICE DETAIL (EXPANDABLE) ═══════════ */
+.service-detail {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.service-card.expanded .service-detail {
+  max-height: 600px;
+}
+
+.service-card.expanded .service-arrow {
+  transform: rotate(90deg);
+  color: var(--brand);
+}
+
+.service-card.expanded .service-icon {
+  background: var(--brand);
+}
+
+.service-card.expanded::before {
+  opacity: 1;
+}
+
+.service-detail-inner {
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  margin-top: 14px;
+}
+
+.service-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.service-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.service-item-icon {
+  color: var(--brand);
+  font-size: 0.75rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.service-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.service-stat {
+  background: var(--sage-bg);
+  border-radius: 12px;
+  padding: 14px 8px;
+  text-align: center;
+}
+
+.service-stat-num {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--brand), var(--sage));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.service-stat-label {
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ═══════════ PROCESS ═══════════ */
+.process-section {
+  padding: 24px 0;
+}
+
+.process-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.process-step {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  background: var(--glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+
+.step-number {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--brand);
+  opacity: 0.7;
+  flex-shrink: 0;
+  width: 36px;
+}
+
+.process-step h4 {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 0.92rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.process-step p {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* ═══════════ TESTIMONIALS ═══════════ */
+.testimonials-section {
+  padding: 24px 0;
+}
+
+.testimonials-scroll {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 8px;
+  margin: 0 -20px;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+.testimonials-scroll::-webkit-scrollbar { display: none; }
+
+.testimonial-card {
+  background: var(--glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding: 24px 22px;
+  min-width: 280px;
+  max-width: 300px;
+  flex-shrink: 0;
+  scroll-snap-align: start;
+}
+
+.testimonial-stars {
+  color: var(--brand);
+  font-size: 0.85rem;
+  margin-bottom: 12px;
+  letter-spacing: 2px;
+}
+
+.testimonial-text {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+  margin-bottom: 16px;
+  font-style: italic;
+}
+
+.testimonial-author {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.testimonial-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--sage-light), var(--bg-warm));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--sage);
+}
+
+.testimonial-name {
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.testimonial-role {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
+/* ═══════════ CTA SECTION ═══════════ */
+.cta-section {
+  padding: 24px 0 40px;
+}
+
+.cta-card {
+  background: var(--sage);
+  border-radius: var(--radius);
+  padding: 32px 24px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-card::before {
+  content: '';
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: rgba(255, 158, 2, 0.15);
+  filter: blur(60px);
+}
+
+.cta-card > * { position: relative; z-index: 1; }
+
+.cta-card h2 {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.5px;
+  margin-bottom: 10px;
+  line-height: 1.2;
+}
+
+.cta-card h2 .accent { color: var(--brand); }
+
+.cta-card p {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.55);
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--brand);
+  color: #fff;
+  padding: 14px 32px;
+  border-radius: 60px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'Figtree', sans-serif;
+  box-shadow: 0 6px 24px var(--brand-glow);
+  transition: all 0.3s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cta-btn:active {
+  transform: scale(0.96);
+}
+
+.cta-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.cta-benefits {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.cta-benefit {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.cta-benefit svg { width: 14px; height: 14px; color: var(--brand-light); flex-shrink: 0; }
+
+/* ═══════════ FOOTER ═══════════ */
+.mini-footer {
+  text-align: center;
+  padding: 20px 0 36px;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.mini-footer a {
+  color: var(--sage);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+/* ═══════════ ANIMATIONS ═══════════ */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); filter: blur(4px); }
+  to { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  filter: blur(4px);
+  transition: opacity 0.6s ease, transform 0.6s ease, filter 0.6s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+}
+
+.reveal-d1 { transition-delay: 0.05s; }
+.reveal-d2 { transition-delay: 0.1s; }
+.reveal-d3 { transition-delay: 0.15s; }
+.reveal-d4 { transition-delay: 0.2s; }
+.reveal-d5 { transition-delay: 0.25s; }
+.reveal-d6 { transition-delay: 0.3s; }
+
+/* ═══════════ SCROLL INDICATORS ═══════════ */
+.scroll-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  margin-top: 10px;
+  opacity: 0.6;
+}
+
+.scroll-hint::after {
+  content: '→';
+  animation: scrollHint 1.5s ease-in-out infinite;
+}
+
+@keyframes scrollHint {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(4px); }
+}
+
+/* ═══════════ TAB NAV (bottom sticky) ═══════════ */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--glass-border);
+  padding: 8px 0 calc(8px + env(safe-area-inset-bottom, 0));
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+}
+
+.bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 16px;
+  border-radius: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'Figtree', sans-serif;
+  transition: all 0.3s;
+  -webkit-tap-highlight-color: transparent;
+  color: var(--text-muted);
+}
+
+.bottom-nav-item.active {
+  color: var(--brand);
+  background: var(--brand-soft);
+}
+
+.bottom-nav-item span:first-child {
+  font-size: 1.1rem;
+}
+
+.bottom-nav-item span:last-child {
+  font-size: 0.6rem;
+  font-weight: 600;
+}
+
+/* ═══════════ PAGES ═══════════ */
+.page {
+  display: none;
+  padding-bottom: 80px;
+}
+.page.active { display: block; }
+
+/* ═══════════ CONTACT PAGE ═══════════ */
+.contact-card {
+  background: var(--glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  margin-bottom: 12px;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+  text-decoration: none;
+  color: var(--text);
+  transition: opacity 0.3s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.contact-item:last-child { border-bottom: none; }
+
+.contact-item:active { opacity: 0.6; }
+
+.contact-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--brand-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.contact-item-text h4 {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.contact-item-text p {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Quick contact buttons */
+.contact-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.contact-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px;
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+  font-family: 'Figtree', sans-serif;
+  transition: all 0.3s;
+  -webkit-tap-highlight-color: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.contact-action-btn:active { transform: scale(0.96); }
+
+.contact-action-btn.tg {
+  background: #2AABEE;
+  color: #fff;
+}
+
+.contact-action-btn.wa {
+  background: #25D366;
+  color: #fff;
+}
+</style>
+</head>
+<body>
+
+<!-- Decorative Blobs -->
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+<div class="blob blob-3"></div>
+
+<div class="app">
+
+  <!-- ═══════════ PAGE: MAIN ═══════════ -->
+  <div class="page active" id="pageMain">
+
+    <!-- Header -->
+    <div class="header">
+      <div class="logo">RU.<span>DA</span></div>
+      <div class="header-tagline">Агентство комплексного digital-присутствия</div>
+    </div>
+
+    <!-- Hero Card -->
+    <div class="hero-card">
+      <h1>Создаём <span class="accent">digital-экосистемы</span> для вашего бизнеса</h1>
+      <p>Лендинги, чат-боты, мини-приложения Telegram и маркетинг — полная система, которая приносит клиентов.</p>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="hero-stat-num">48+</div>
+          <div class="hero-stat-label">проектов</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-num">32</div>
+          <div class="hero-stat-label">клиента</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-num">+187%</div>
+          <div class="hero-stat-label">конверсия</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA Section -->
+    <div class="cta-section" style="padding-top: 0;">
+      <div class="cta-card">
+        <h2>Готовы <span class="accent">увеличить продажи</span>?</h2>
+        <p>Оставьте заявку — обсудим ваш проект и предложим стратегию роста.</p>
+        <button class="cta-btn" onclick="switchPage('contact')">
+          Обсудить проект
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+        <div class="cta-benefits">
+          <div class="cta-benefit">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            Бесплатный аудит
+          </div>
+          <div class="cta-benefit">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            Ответ за 2 часа
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════ PAGE: SERVICES ═══════════ -->
+  <div class="page" id="pageServices">
+
+    <div class="header">
+      <div class="logo">RU.<span>DA</span></div>
+    </div>
+
+    <div class="services-section">
+      <div class="section-label">Что мы делаем</div>
+      <h2 class="section-title">Полный спектр digital-решений</h2>
+
+      <div class="services-list">
+
+        <div class="service-card reveal" onclick="toggleService(this)">
+          <div class="service-card-header">
+            <div class="service-icon">🚀</div>
+            <h3>Лендинги</h3>
+            <span class="service-arrow">›</span>
+          </div>
+          <p>Конверсионные посадочные страницы с продуманным UX и скоростью загрузки до 1 секунды.</p>
+          <div class="service-tags">
+            <span class="service-tag">UI/UX</span>
+            <span class="service-tag">Tilda</span>
+            <span class="service-tag">Разработка</span>
+            <span class="service-tag">A/B тесты</span>
+          </div>
+          <div class="service-detail">
+            <div class="service-detail-inner">
+              <div class="service-items">
+                <div class="service-item"><span class="service-item-icon">→</span> Анализ ЦА и конкурентов</div>
+                <div class="service-item"><span class="service-item-icon">→</span> Прототипирование и UX</div>
+                <div class="service-item"><span class="service-item-icon">→</span> Адаптивная вёрстка</div>
+                <div class="service-item"><span class="service-item-icon">→</span> SEO-оптимизация</div>
+                <div class="service-item"><span class="service-item-icon">→</span> Подключение аналитики</div>
+                <div class="service-item"><span class="service-item-icon">→</span> A/B тестирование</div>
+              </div>
+              <div class="service-stats">
+                <div class="service-stat"><div class="service-stat-num">×3.2</div><div class="service-stat-label">конверсия</div></div>
+                <div class="service-stat"><div class="service-stat-num">&lt;1с</div><div class="service-stat-label">загрузка</div></div>
+                <div class="service-stat"><div class="service-stat-num">7 дней</div><div class="service-stat-label">запуск</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="service-card reveal reveal-d1" onclick="toggleService(this)">
+          <div class="service-card-header">
+            <div class="service-icon">🤖</div>
+            <h3>Чат-боты</h3>
+            <span class="service-arrow">›</span>
+          </div>
+          <p>Умные боты для Telegram, WhatsApp и VK — продают, консультируют и автоматизируют 24/7.</p>
+          <div class="service-tags">
+            <span class="service-tag">Telegram</span>
+            <span class="service-tag">WhatsApp</span>
+            <span class="service-tag">AI</span>
+            <span class="service-tag">Автоворонки</span>
+          </div>
+          <div class="service-detail">
+            <div class="service-detail-inner">
+              <div class="service-items">
+                <div class="service-item"><span class="service-item-icon">→</span> Проектирование сценариев</div>
+                <div class="service-item"><span class="service-item-icon">→</span> Разработка и тестирование</div>
+                <div class="service-item"><span class="service-item-icon">→</span> Интеграция с CRM</div>
+                <div class="service-item"><span class="service-item-icon">→</span> Автоворонки продаж</div>
+                <div class="service-item"><span class="service-item-icon">→</span> AI-ответы на вопросы</div>
+                <div class="service-item"><span class="service-item-icon">→</span> Аналитика и A/B тесты</div>
+              </div>
+              <div class="service-stats">
+                <div class="service-stat"><div class="service-stat-num">24/7</div><div class="service-stat-label">работает</div></div>
+                <div class="service-stat"><div class="service-stat-num">×2.5</div><div class="service-stat-label">конверсия</div></div>
+                <div class="service-stat"><div class="service-stat-num">10 дней</div><div class="service-stat-label">запуск</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="service-card reveal reveal-d2" onclick="toggleService(this)">
+          <div class="service-card-header">
+            <div class="service-icon">📱</div>
+            <h3>Telegram Mini Apps</h3>
+            <span class="service-arrow">›</span>
+          </div>
+          <p>Приложения внутри Telegram — магазины, записи, лояльность. Без установки, без App Store.</p>
+          <div class="service-tags">
+            <span class="service-tag">TWA</span>
+            <span class="service-tag">React</span>
+            <span class="service-tag">E-commerce</span>
+            <span class="service-tag">API</span>
+          </div>
+          <div class="service-detail">
+            <div class="service-detail-inner">
+              <div class="service-items">
+                <div class="service-item"><span class="service-item-icon">→</span> Дизайн интерфейса Mini App</div>
+                <div class="service-item"><span class="service-item-icon">→</span> Фронтенд-разработка на React</div>
+                <div class="service-item"><span class="service-item-icon">→</span> Бэкенд, база данных и API</div>
+                <div class="service-item"><span class="service-item-icon">→</span> Интеграция с Telegram Bot API</div>
+                <div class="service-item"><span class="service-item-icon">→</span> Платежи через Telegram Stars</div>
+                <div class="service-item"><span class="service-item-icon">→</span> Пуш-уведомления и ретеншн</div>
+              </div>
+              <div class="service-stats">
+                <div class="service-stat"><div class="service-stat-num">0₽</div><div class="service-stat-label">за установку</div></div>
+                <div class="service-stat"><div class="service-stat-num">×3</div><div class="service-stat-label">вовлечение</div></div>
+                <div class="service-stat"><div class="service-stat-num">14 дней</div><div class="service-stat-label">запуск</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="service-card reveal reveal-d3" onclick="toggleService(this)">
+          <div class="service-card-header">
+            <div class="service-icon">📢</div>
+            <h3>Яндекс Директ & РСЯ</h3>
+            <span class="service-arrow">›</span>
+          </div>
+          <p>Настройка и ведение рекламных кампаний с оптимизацией стоимости лида и ROI.</p>
+          <div class="service-tags">
+            <span class="service-tag">Директ</span>
+            <span class="service-tag">РСЯ</span>
+            <span class="service-tag">Ретаргетинг</span>
+            <span class="service-tag">Аналитика</span>
+          </div>
+          <div class="service-detail">
+            <div class="service-detail-inner">
+              <div class="service-items">
+                <div class="service-item"><span class="service-item-icon">→</span> Сбор семантического ядра</div>
+                <div class="service-item"><span class="service-item-icon">→</span> Создание рекламных объявлений</div>
+                <div class="service-item"><span class="service-item-icon">→</span> Настройка ретаргетинга</div>
+                <div class="service-item"><span class="service-item-icon">→</span> Ежедневная оптимизация ставок</div>
+                <div class="service-item"><span class="service-item-icon">→</span> Управление бюджетом</div>
+                <div class="service-item"><span class="service-item-icon">→</span> Еженедельные отчёты</div>
+              </div>
+              <div class="service-stats">
+                <div class="service-stat"><div class="service-stat-num">-54%</div><div class="service-stat-label">стоимость лида</div></div>
+                <div class="service-stat"><div class="service-stat-num">×2.1</div><div class="service-stat-label">ROI</div></div>
+                <div class="service-stat"><div class="service-stat-num">3 дня</div><div class="service-stat-label">запуск</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="service-card reveal reveal-d4" onclick="toggleService(this)">
+          <div class="service-card-header">
+            <div class="service-icon">✈️</div>
+            <h3>Telegram Ads</h3>
+            <span class="service-arrow">›</span>
+          </div>
+          <p>Официальная реклама в Telegram — показываем ваше сообщение целевой аудитории.</p>
+          <div class="service-tags">
+            <span class="service-tag">Таргетинг</span>
+            <span class="service-tag">CPM</span>
+            <span class="service-tag">Аналитика</span>
+            <span class="service-tag">Креативы</span>
+          </div>
+          <div class="service-detail">
+            <div class="service-detail-inner">
+              <div class="service-items">
+                <div class="service-item"><span class="service-item-icon">→</span> Подбор каналов и аудиторий</div>
+                <div class="service-item"><span class="service-item-icon">→</span> Создание рекламных креативов</div>
+                <div class="service-item"><span class="service-item-icon">→</span> Запуск и управление кампаниями</div>
+                <div class="service-item"><span class="service-item-icon">→</span> Оптимизация CPM и охвата</div>
+                <div class="service-item"><span class="service-item-icon">→</span> Аналитика подписок</div>
+                <div class="service-item"><span class="service-item-icon">→</span> Тестирование гипотез</div>
+              </div>
+              <div class="service-stats">
+                <div class="service-stat"><div class="service-stat-num">от 3₽</div><div class="service-stat-label">за подписчика</div></div>
+                <div class="service-stat"><div class="service-stat-num">500K+</div><div class="service-stat-label">охват</div></div>
+                <div class="service-stat"><div class="service-stat-num">2 дня</div><div class="service-stat-label">старт</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="service-card reveal reveal-d5" onclick="toggleService(this)">
+          <div class="service-card-header">
+            <div class="service-icon">📝</div>
+            <h3>Ведение Telegram-каналов</h3>
+            <span class="service-arrow">›</span>
+          </div>
+          <p>Контент-стратегия, создание контента, рост подписчиков — делаем канал точкой продаж.</p>
+          <div class="service-tags">
+            <span class="service-tag">Контент</span>
+            <span class="service-tag">Стратегия</span>
+            <span class="service-tag">Рост</span>
+            <span class="service-tag">Вовлечение</span>
+          </div>
+          <div class="service-detail">
+            <div class="service-detail-inner">
+              <div class="service-items">
+                <div class="service-item"><span class="service-item-icon">→</span> Разработка контент-стратегии</div>
+                <div class="service-item"><span class="service-item-icon">→</span> Написание и оформление постов</div>
+                <div class="service-item"><span class="service-item-icon">→</span> Контент-план на месяц</div>
+                <div class="service-item"><span class="service-item-icon">→</span> Работа с вовлечением</div>
+                <div class="service-item"><span class="service-item-icon">→</span> Посевы и коллаборации</div>
+                <div class="service-item"><span class="service-item-icon">→</span> Ежемесячный отчёт</div>
+              </div>
+              <div class="service-stats">
+                <div class="service-stat"><div class="service-stat-num">+40%</div><div class="service-stat-label">вовлечение</div></div>
+                <div class="service-stat"><div class="service-stat-num">×3</div><div class="service-stat-label">рост подписчиков</div></div>
+                <div class="service-stat"><div class="service-stat-num">12</div><div class="service-stat-label">постов/мес</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ PAGE: ABOUT ═══════════ -->
+  <div class="page" id="pageAbout">
+
+    <div class="header">
+      <div class="logo">RU.<span>DA</span></div>
+    </div>
+
+    <!-- Process -->
+    <div class="process-section">
+      <div class="section-label">Как мы работаем</div>
+      <h2 class="section-title">От идеи до потока клиентов</h2>
+
+      <div class="process-steps">
+        <div class="process-step reveal">
+          <div class="step-number">01</div>
+          <div>
+            <h4>Аудит и стратегия</h4>
+            <p>Анализируем бизнес, конкурентов и ЦА. Формируем digital-стратегию.</p>
+          </div>
+        </div>
+        <div class="process-step reveal reveal-d1">
+          <div class="step-number">02</div>
+          <div>
+            <h4>Дизайн и прототип</h4>
+            <p>Создаём макеты и прототипы. Согласовываем каждый экран.</p>
+          </div>
+        </div>
+        <div class="process-step reveal reveal-d2">
+          <div class="step-number">03</div>
+          <div>
+            <h4>Разработка</h4>
+            <p>Верстаем, программируем, тестируем на всех устройствах.</p>
+          </div>
+        </div>
+        <div class="process-step reveal reveal-d3">
+          <div class="step-number">04</div>
+          <div>
+            <h4>Запуск и рост</h4>
+            <p>Запускаем рекламу, подключаем аналитику и оптимизируем.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Testimonials -->
+    <div class="testimonials-section" style="margin-top: 12px;">
+      <div class="section-label">Отзывы</div>
+      <h2 class="section-title">Что говорят клиенты</h2>
+      <div class="scroll-hint">Листайте</div>
+
+      <div class="testimonials-scroll">
+        <div class="testimonial-card">
+          <div class="testimonial-stars">★★★★★</div>
+          <div class="testimonial-text">«Ребята сделали не просто сайт, а целую систему продаж. Бот собирает заявки, лендинг конвертит, реклама приводит людей.»</div>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">АМ</div>
+            <div>
+              <div class="testimonial-name">Алексей М.</div>
+              <div class="testimonial-role">CEO, Business Club Moscow</div>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <div class="testimonial-stars">★★★★★</div>
+          <div class="testimonial-text">«Стоимость привлечения ученика снизилась почти вдвое. Люди приходят уже прогретые через воронку.»</div>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">ЕК</div>
+            <div>
+              <div class="testimonial-name">Екатерина К.</div>
+              <div class="testimonial-role">Основатель, SpeakUp School</div>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <div class="testimonial-stars">★★★★★</div>
+          <div class="testimonial-text">«Telegram Mini App для клиники — лучшее вложение за год. Пациенты записываются сами, нагрузка на администраторов упала.»</div>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">ДВ</div>
+            <div>
+              <div class="testimonial-name">Дмитрий В.</div>
+              <div class="testimonial-role">Управляющий, «Здоровье+»</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ PAGE: CONTACT ═══════════ -->
+  <div class="page" id="pageContact">
+
+    <div class="header">
+      <div class="logo">RU.<span>DA</span></div>
+    </div>
+
+    <div class="section-label">Свяжитесь с нами</div>
+    <h2 class="section-title">Обсудим ваш проект</h2>
+
+    <div class="contact-actions">
+      <a href="https://t.me/ruda_digital" class="contact-action-btn tg" target="_blank">
+        ✈️ Telegram
+      </a>
+      <a href="https://wa.me/79001234567" class="contact-action-btn wa" target="_blank">
+        💬 WhatsApp
+      </a>
+    </div>
+
+    <div class="contact-card" style="margin-top: 16px;">
+      <a href="https://t.me/ruda_digital" class="contact-item" target="_blank">
+        <div class="contact-icon">✈️</div>
+        <div class="contact-item-text">
+          <h4>Telegram</h4>
+          <p>@ruda_digital — ответим за 5 минут</p>
+        </div>
+      </a>
+      <a href="https://wa.me/79001234567" class="contact-item" target="_blank">
+        <div class="contact-icon">💬</div>
+        <div class="contact-item-text">
+          <h4>WhatsApp</h4>
+          <p>+7 (900) 123-45-67</p>
+        </div>
+      </a>
+      <a href="mailto:hello@ruda.digital" class="contact-item" target="_blank">
+        <div class="contact-icon">📧</div>
+        <div class="contact-item-text">
+          <h4>Email</h4>
+          <p>hello@ruda.digital</p>
+        </div>
+      </a>
+      <a href="https://ruda.digital" class="contact-item" target="_blank">
+        <div class="contact-icon">🌐</div>
+        <div class="contact-item-text">
+          <h4>Сайт</h4>
+          <p>ruda.digital</p>
+        </div>
+      </a>
+    </div>
+
+    <div class="cta-card" style="margin-top: 4px;">
+      <h2>Бесплатный <span class="accent">аудит</span></h2>
+      <p>Проведём аудит вашего digital-присутствия и предложим стратегию роста — бесплатно и без обязательств.</p>
+      <button class="cta-btn" onclick="requestAudit()">
+        Запросить аудит
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+    </div>
+
+    <div class="mini-footer">
+      © 2026 <a href="https://ruda.digital" target="_blank">RUDA Digital</a>. Все права защищены.
+    </div>
+  </div>
+
+</div>
+
+<!-- Bottom Navigation -->
+<div class="bottom-nav">
+  <button class="bottom-nav-item active" onclick="switchPage('main')" data-page="main">
+    <span>🏠</span>
+    <span>Главная</span>
+  </button>
+  <button class="bottom-nav-item" onclick="switchPage('services')" data-page="services">
+    <span>⚡</span>
+    <span>Услуги</span>
+  </button>
+  <button class="bottom-nav-item" onclick="switchPage('about')" data-page="about">
+    <span>📋</span>
+    <span>О нас</span>
+  </button>
+  <button class="bottom-nav-item" onclick="switchPage('contact')" data-page="contact">
+    <span>✉️</span>
+    <span>Контакты</span>
+  </button>
+</div>
+
+<script>
+// ═══════════ TELEGRAM WEB APP INIT ═══════════
+if (window.Telegram && window.Telegram.WebApp) {
+  const tg = window.Telegram.WebApp;
+  tg.ready();
+  tg.expand();
+  // Adapt to Telegram theme if available
+  if (tg.themeParams && tg.themeParams.bg_color) {
+    // Could adapt colors here for dark mode support
+  }
+}
+
+// ═══════════ PAGE SWITCHING ═══════════
+function switchPage(pageId) {
+  // Hide all pages
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+
+  // Show target page
+  const map = { main: 'pageMain', services: 'pageServices', about: 'pageAbout', contact: 'pageContact' };
+  const target = document.getElementById(map[pageId]);
+  if (target) target.classList.add('active');
+
+  // Update nav
+  document.querySelectorAll('.bottom-nav-item').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.page === pageId);
+  });
+
+  // Scroll to top
+  window.scrollTo({ top: 0, behavior: 'instant' });
+
+  // Trigger reveal animations for the new page
+  setTimeout(() => triggerReveals(), 50);
+}
+
+// ═══════════ SERVICE CARD TOGGLE ═══════════
+function toggleService(card) {
+  const wasExpanded = card.classList.contains('expanded');
+
+  // Close all others
+  document.querySelectorAll('.service-card.expanded').forEach(c => {
+    if (c !== card) c.classList.remove('expanded');
+  });
+
+  // Toggle this one
+  card.classList.toggle('expanded', !wasExpanded);
+}
+
+// ═══════════ SCROLL REVEAL ═══════════
+function triggerReveals() {
+  const reveals = document.querySelectorAll('.page.active .reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  reveals.forEach(el => {
+    el.classList.remove('visible');
+    observer.observe(el);
+  });
+}
+
+// Initial reveals
+triggerReveals();
+
+// ═══════════ REQUEST AUDIT (via Telegram) ═══════════
+function requestAudit() {
+  if (window.Telegram && window.Telegram.WebApp) {
+    window.Telegram.WebApp.sendData(JSON.stringify({
+      action: 'request_audit',
+      timestamp: Date.now()
+    }));
+  } else {
+    // Fallback: open Telegram chat
+    window.open('https://t.me/ruda_digital?text=' + encodeURIComponent('Здравствуйте! Хочу запросить бесплатный аудит digital-присутствия.'), '_blank');
+  }
+}
+</script>
+
+</body>
+</html>
